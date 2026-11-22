@@ -1,0 +1,651 @@
+<title>아린이의 빙글빙글 모험</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+/* Layout: one playful "workbook desk" screen at a time - home map, then a stage card with the guide character on top. Single light look on purpose. */
+:root {
+  --bg: #eef0fb;
+  --paper: #ffffff;
+  --ink: #2c2b45;
+  --muted: #6d6b8c;
+  --line: #b9b7d3;
+  --shape: #9ccc7a;
+  --shape-edge: #5f9a3f;
+  --accent: #6b5bd6;
+  --coral: #ff7a6b;
+  --sun: #ffc94a;
+  --sky: #3d8bdb;
+  --orange: #f08a24;
+  --pink: #f7a8c0;
+  --ok: #34a86b;
+  --soft: #e3e1f6;
+  --f-display: "Jua", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --f-body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  color-scheme: light;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 17px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 12px 28px;
+  user-select: none; -webkit-user-select: none;
+  background-image: radial-gradient(var(--soft) 1.5px, transparent 1.6px);
+  background-size: 26px 26px;
+}
+button { font-family: var(--f-display); color: inherit; cursor: pointer; border: 0; }
+button:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.wrap { max-width: 980px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.top h1 { font-family: var(--f-display); font-weight: 400; font-size: clamp(24px, 4.4vw, 38px); margin: 0; color: var(--accent); text-wrap: balance; flex: 1 1 auto; min-width: 0; }
+.pill { background: var(--paper); border-radius: 999px; padding: 8px 16px; font-family: var(--f-display); font-size: 20px; display: inline-flex; gap: 6px; align-items: center; box-shadow: 0 2px 0 var(--line); }
+.pill .star { color: var(--sun); }
+.back { background: var(--paper); border-radius: 14px; padding: 10px 16px; font-size: 19px; box-shadow: 0 3px 0 var(--line); }
+.guide { display: flex; gap: 12px; align-items: flex-end; }
+.guide svg { width: 76px; height: 76px; flex: none; }
+.bubble { background: var(--paper); border-radius: 18px 18px 18px 4px; padding: 12px 16px; font-size: 18px; line-height: 1.5; box-shadow: 0 3px 0 var(--line); min-width: 0; flex: 1; }
+.bubble b { color: var(--coral); font-weight: 400; font-family: var(--f-display); }
+.card { background: var(--paper); border-radius: 24px; padding: 18px; box-shadow: 0 4px 0 var(--line); }
+/* home */
+.stages { display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 14px; }
+.stage { text-align: left; background: var(--paper); border-radius: 22px; padding: 16px; display: flex; gap: 14px; align-items: center; box-shadow: 0 5px 0 var(--c, var(--accent)); transition: transform .12s; }
+.stage:active { transform: translateY(3px); box-shadow: 0 2px 0 var(--c, var(--accent)); }
+.stage svg { width: 84px; height: 84px; flex: none; }
+.stage .t { font-size: 23px; color: var(--c, var(--accent)); }
+.stage .d { font-family: var(--f-body); font-size: 15px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.stage .s { font-size: 15px; margin-top: 6px; color: var(--sun); letter-spacing: 1px; }
+/* progress */
+.prog { display: flex; gap: 6px; flex-wrap: wrap; }
+.prog i { width: 18px; height: 18px; border-radius: 50%; background: var(--soft); display: block; }
+.prog i.on { background: var(--sun); }
+.prog i.miss { background: var(--pink); }
+.prog i.now { outline: 3px solid var(--accent); outline-offset: 1px; }
+/* quiz */
+.qrow { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2.4fr); gap: 16px; align-items: center; }
+.qleft { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.qleft svg { width: 100%; max-width: 240px; }
+.dirtag { font-family: var(--f-display); color: var(--shape-edge); font-size: 19px; min-height: 1.3em; text-align: center; }
+.choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; background: var(--soft); border-radius: 22px; padding: 12px; }
+.choice { background: var(--paper); border-radius: 50%; aspect-ratio: 1; padding: 4px; position: relative; box-shadow: 0 4px 0 var(--line); max-width: 100%; }
+.choice svg { width: 100%; height: 100%; display: block; }
+.choice.good { box-shadow: 0 0 0 6px var(--ok); }
+.choice.bad { opacity: .45; animation: shake .4s; }
+@keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+.btns { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }
+.btn { background: var(--accent); color: #fff; border-radius: 16px; padding: 12px 20px; font-size: 21px; box-shadow: 0 4px 0 #4a3da6; min-height: 56px; }
+.btn.alt { background: var(--sun); color: var(--ink); box-shadow: 0 4px 0 #d19d19; }
+.btn.coral { background: var(--coral); box-shadow: 0 4px 0 #cf5547; }
+.btn.ghost { background: var(--paper); color: var(--ink); box-shadow: 0 4px 0 var(--line); }
+.btn:active { transform: translateY(3px); box-shadow: none; }
+.btn[disabled] { opacity: .4; }
+/* grid frames */
+.frames { display: grid; grid-template-columns: minmax(0,1fr) 22px minmax(0,1fr) 22px minmax(0,1fr) 22px minmax(0,1fr); align-items: center; gap: 4px; }
+.frame { border-radius: 18px; padding: 4px; aspect-ratio: 1; }
+.frame svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.frame.blank { background: #e6e4f7; box-shadow: inset 0 0 0 3px var(--accent); }
+.frame.blank.done { box-shadow: inset 0 0 0 4px var(--ok); }
+.arr { color: #9a98b8; font-size: 20px; text-align: center; }
+.cell { cursor: pointer; }
+.rot { transition: transform 1.4s cubic-bezier(.45,.05,.3,1); }
+/* learn */
+.learn { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 18px; align-items: center; }
+.learn svg.dial { width: 100%; max-width: 380px; margin: 0 auto; display: block; touch-action: none; }
+.panel { display: flex; flex-direction: column; gap: 12px; }
+.panel .btn { width: 100%; text-align: left; display: flex; gap: 10px; align-items: center; }
+.shapes { display: flex; gap: 8px; flex-wrap: wrap; }
+.shapes button { background: var(--soft); border-radius: 14px; width: 58px; height: 58px; padding: 6px; }
+.shapes button.on { background: var(--paper); box-shadow: 0 0 0 3px var(--accent); }
+.shapes svg { width: 100%; height: 100%; }
+.readout { font-family: var(--f-display); font-size: 22px; color: var(--accent); min-height: 1.4em; }
+.hint-row { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; align-items: center; }
+.msg { font-family: var(--f-display); font-size: 22px; text-align: center; min-height: 1.4em; }
+.msg.ok { color: var(--ok); }
+.msg.no { color: var(--coral); }
+.end { text-align: center; display: flex; flex-direction: column; gap: 14px; align-items: center; padding: 26px 10px; }
+.end .big { font-family: var(--f-display); font-size: 44px; color: var(--accent); }
+.end .stars { font-size: 42px; color: var(--sun); letter-spacing: 4px; }
+.confetti { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 50; }
+.confetti i { position: absolute; top: -20px; width: 12px; height: 16px; border-radius: 3px; animation: fall 1.6s ease-in forwards; }
+@keyframes fall { to { transform: translateY(110vh) rotate(540deg); } }
+@media (max-width: 640px) {
+  .qrow, .learn { grid-template-columns: 1fr; }
+  .frames { grid-template-columns: minmax(0,1fr) 14px minmax(0,1fr); }
+  .frames .arr.mid { display: none; }
+  .bubble { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .rot { transition-duration: .01s; }
+  .confetti { display: none; }
+}
+</style>
+
+<div class="wrap" id="app"></div>
+
+<script>
+(() => {
+"use strict";
+const NS = "http://www.w3.org/2000/svg";
+const $ = (s, r = document) => r.querySelector(s);
+const app = $("#app");
+
+function el(tag, attrs = {}, kids = []) {
+  const svgTags = /^(svg|g|path|circle|rect|polygon|line|ellipse|text|defs|polyline)$/;
+  const n = svgTags.test(tag) ? document.createElementNS(NS, tag) : document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) {
+    if (k === "on") for (const [e, f] of Object.entries(v)) n.addEventListener(e, f);
+    else if (k === "html") n.innerHTML = v;
+    else if (k === "text") n.textContent = v;
+    else if (v !== false && v != null) n.setAttribute(k, v);
+  }
+  for (const k of [].concat(kids)) if (k != null) n.append(k.nodeType ? k : document.createTextNode(k));
+  return n;
+}
+
+/* ---------------- storage (per-device convenience only) ---------------- */
+const STAGES = ["learn", "dot", "find", "square", "tri"];
+let stars = {};
+try { stars = JSON.parse(localStorage.getItem("rina-stars") || "{}") || {}; } catch (e) { stars = {}; }
+function saveStars() { try { localStorage.setItem("rina-stars", JSON.stringify(stars)); } catch (e) {} }
+const totalStars = () => STAGES.reduce((a, s) => a + (stars[s] || 0), 0);
+
+/* ---------------- sound ---------------- */
+let actx = null;
+function beep(notes) {
+  try {
+    actx = actx || new (window.AudioContext || window.webkitAudioContext)();
+    let t = actx.currentTime;
+    for (const [f, d] of notes) {
+      const o = actx.createOscillator(), g = actx.createGain();
+      o.type = "triangle"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.18, t); g.gain.exponentialRampToValueAtTime(0.001, t + d);
+      o.connect(g).connect(actx.destination); o.start(t); o.stop(t + d); t += d * 0.8;
+    }
+  } catch (e) {}
+}
+const yay = () => beep([[523, .12], [659, .12], [784, .22]]);
+const oops = () => beep([[330, .15], [262, .25]]);
+
+function confetti() {
+  const box = el("div", { class: "confetti" });
+  const cols = ["#6b5bd6", "#ff7a6b", "#ffc94a", "#9ccc7a", "#3d8bdb"];
+  for (let i = 0; i < 40; i++) {
+    const p = el("i");
+    p.style.left = Math.random() * 100 + "vw";
+    p.style.background = cols[i % cols.length];
+    p.style.animationDelay = Math.random() * .4 + "s";
+    box.append(p);
+  }
+  document.body.append(box);
+  setTimeout(() => box.remove(), 2300);
+}
+
+/* ---------------- guide character: 빙글이 (a spinning top) ---------------- */
+function bingle(mood = "happy") {
+  const s = el("svg", { viewBox: "0 0 100 100", "aria-hidden": "true" });
+  s.append(
+    el("path", { d: "M50 96 L42 80 L58 80 Z", fill: "#4a3da6" }),
+    el("ellipse", { cx: 50, cy: 52, rx: 40, ry: 32, fill: "#6b5bd6" }),
+    el("path", { d: "M12 52 Q50 70 88 52", stroke: "#ffc94a", "stroke-width": 7, fill: "none" }),
+    el("rect", { x: 45, y: 10, width: 10, height: 14, rx: 4, fill: "#4a3da6" }),
+    el("circle", { cx: 37, cy: 44, r: 7, fill: "#fff" }), el("circle", { cx: 63, cy: 44, r: 7, fill: "#fff" }),
+    el("circle", { cx: 38, cy: 45, r: 3.5, fill: "#2c2b45" }), el("circle", { cx: 64, cy: 45, r: 3.5, fill: "#2c2b45" }),
+    el("circle", { cx: 27, cy: 58, r: 5, fill: "#f7a8c0", opacity: .8 }), el("circle", { cx: 73, cy: 58, r: 5, fill: "#f7a8c0", opacity: .8 }),
+    el("path", { d: mood === "sad" ? "M42 63 Q50 57 58 63" : "M40 58 Q50 68 60 58", stroke: "#2c2b45", "stroke-width": 3, fill: "none", "stroke-linecap": "round" })
+  );
+  return s;
+}
+function guide(html, mood) {
+  const b = el("div", { class: "bubble", html });
+  const g = el("div", { class: "guide" }, [bingle(mood), b]);
+  g.say = (h, m) => { b.innerHTML = h; g.firstChild.replaceWith(bingle(m)); };
+  return g;
+}
+
+/* ---------------- geometry ---------------- */
+// Shapes in SVG coordinates (y grows downward), roughly inside a unit circle.
+const arc = (cx, cy, r, a0, a1, step) => { const o = []; for (let a = a0; a <= a1 + 1e-9; a += step) o.push([cx + r * Math.cos(a * Math.PI / 180), cy + r * Math.sin(a * Math.PI / 180)]); return o; };
+const SHAPES = {
+  rect: [[-.3, .62], [.3, .62], [.3, -.62], [-.3, -.62]],
+  rtri: [[-.55, .5], [.55, .5], [-.55, -.6]],
+  rtri2: [[-.5, -.55], [.55, .55], [-.5, .55]],
+  trap: [[-.35, -.7], [.3, -.35], [.3, .35], [-.35, .7]],
+  half: arc(-.3, 0, .68, -90, 90, 10),
+  quarter: [[-.45, .45], ...arc(-.45, .45, 1, -90, 0, 10)],
+  L: [[-.5, -.6], [-.1, -.6], [-.1, .2], [.5, .2], [.5, .6], [-.5, .6]],
+  arrow: [[0, -.72], [.5, -.17], [.18, -.17], [.18, .65], [-.18, .65], [-.18, -.17], [-.5, -.17]],
+  para: [[-.55, .5], [.15, .5], [.55, -.5], [-.15, -.5]],
+  house: [[-.45, .55], [.45, .55], [.45, -.15], [0, -.68], [-.45, -.15]],
+  T: [[-.6, -.5], [.6, -.5], [.6, -.1], [.2, -.1], [.2, .6], [-.2, .6], [-.2, -.1], [-.6, -.1]],
+  flag: [[-.4, .65], [-.4, -.65], [.5, -.35], [-.2, -.05], [-.2, .65]],
+  isotri: [[0, -.62], [.58, .5], [-.58, .5]],
+};
+const rot = ([x, y], d) => { const t = d * Math.PI / 180, c = Math.cos(t), s = Math.sin(t); return [x * c - y * s, x * s + y * c]; }; // clockwise on screen
+const TF = {
+  r0: p => p, r90: p => rot(p, 90), r180: p => rot(p, 180), r270: p => rot(p, 270),
+  fh: p => [-p[0], p[1]], fv: p => [p[0], -p[1]],
+  fh90: p => rot([-p[0], p[1]], 90), fh270: p => rot([-p[0], p[1]], 270), r45: p => rot(p, 45),
+};
+const keyOf = pts => pts.map(([x, y]) => (Math.round(x * 100) + 0) + "," + (Math.round(y * 100) + 0)).sort().join(" ");
+const pts2str = (pts, s) => pts.map(([x, y]) => (x * s).toFixed(1) + "," + (y * s).toFixed(1)).join(" ");
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const pick = a => a[Math.floor(Math.random() * a.length)];
+// the point of the shape closest to the top dot = "점 친구"
+const topPoint = pts => pts.reduce((b, p) => (p[1] < b[1] - 1e-6 || (Math.abs(p[1] - b[1]) < 1e-6 && Math.abs(p[0]) < Math.abs(b[0])) ? p : b));
+
+function shapeEl(pts, s, opts = {}) {
+  return el("polygon", { points: pts2str(pts, s), fill: opts.fill || "var(--shape)", stroke: opts.stroke || "var(--shape-edge)", "stroke-width": 2, "stroke-linejoin": "round", opacity: opts.opacity ?? 1 });
+}
+function starEl(x, y, r = 9) {
+  const p = [];
+  for (let i = 0; i < 10; i++) { const a = -90 + i * 36, rr = i % 2 ? r * .45 : r; p.push([x + rr * Math.cos(a * Math.PI / 180), y + rr * Math.sin(a * Math.PI / 180)]); }
+  return el("polygon", { points: p.map(q => q.join(",")).join(" "), fill: "var(--sun)", stroke: "#c58c00", "stroke-width": 1.5 });
+}
+function dashedCircle(r) { return el("circle", { r, fill: "#fff", stroke: "var(--line)", "stroke-width": 2, "stroke-dasharray": "4 5" }); }
+function dotEl(x, y, r = 7) { return el("circle", { cx: x, cy: y, r, fill: "var(--ink)" }); }
+// arrow along the circle: start angle (deg, 0 = right, -90 = top, clockwise positive), sweep (+cw / -ccw)
+function arrowArc(r, start, sweep, color = "var(--shape-edge)") {
+  const g = el("g");
+  const off = sweep > 0 ? 9 : -9;
+  const a0 = start + off, a1 = start + sweep;
+  const P = a => [r * Math.cos(a * Math.PI / 180), r * Math.sin(a * Math.PI / 180)];
+  const [x0, y0] = P(a0), [x1, y1] = P(a1);
+  const large = Math.abs(a1 - a0) > 180 ? 1 : 0, sw = sweep > 0 ? 1 : 0;
+  g.append(el("path", { d: `M${x0} ${y0} A${r} ${r} 0 ${large} ${sw} ${x1} ${y1}`, fill: "none", stroke: color, "stroke-width": 5, "stroke-linecap": "round" }));
+  const t = a1 * Math.PI / 180;
+  let tx = -Math.sin(t), ty = Math.cos(t);
+  if (sweep < 0) { tx = -tx; ty = -ty; }
+  const nx = -ty, ny = tx;
+  g.append(el("polygon", { points: `${x1 + tx * 13},${y1 + ty * 13} ${x1 + nx * 9},${y1 + ny * 9} ${x1 - nx * 9},${y1 - ny * 9}`, fill: color }));
+  return g;
+}
+const DIRNAME = { 90: "시계 방향으로 ¼바퀴", 180: "시계 방향으로 ½바퀴", 270: "시계 방향으로 ¾바퀴", "-90": "시계 반대 방향으로 ¼바퀴" };
+const POSNAME = { 0: "오른쪽", 90: "아래", 180: "왼쪽", 270: "위" }; // angle (cw from right) -> name
+
+/* ---------------- screens ---------------- */
+let screen = "home";
+function topbar(title, showBack = true) {
+  return el("div", { class: "top" }, [
+    showBack ? el("button", { class: "back", on: { click: home }, text: "← 처음으로" }) : null,
+    el("h1", { text: title }),
+    el("span", { class: "pill" }, [el("span", { class: "star", text: "★" }), String(totalStars())]),
+  ]);
+}
+
+function stageIcon(kind) {
+  const s = el("svg", { viewBox: "-50 -50 100 100" });
+  if (kind === "learn") { s.append(dashedCircle(40), arrowArc(44, -90, 270), dotEl(0, -40, 5), shapeEl(SHAPES.L, 30)); }
+  if (kind === "dot") { s.append(dashedCircle(40), arrowArc(44, -90, 90), dotEl(0, -40, 6), el("circle", { cx: 40, cy: 0, r: 7, fill: "none", stroke: "var(--coral)", "stroke-width": 3 })); }
+  if (kind === "find") { s.append(dashedCircle(40), dotEl(40, 0, 5), shapeEl(SHAPES.rtri.map(TF.r90), 30)); }
+  if (kind === "square") { const g = el("g"); for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) g.append(el("rect", { x: -36 + c * 24, y: -36 + r * 24, width: 24, height: 24, fill: (r === 0 && c < 2) || (r === 1 && c === 0) ? "var(--shape)" : "#fff", stroke: "var(--line)", "stroke-dasharray": "3 3" })); s.append(g, dotEl(0, -36, 5)); }
+  if (kind === "tri") { const g = triGroup(22, new Set(["u,1,0", "d,1,0"]), null); g.setAttribute("transform", "translate(0,6)"); s.append(g); }
+  return s;
+}
+
+function home() {
+  screen = "home";
+  app.replaceChildren(
+    topbar("아린이의 빙글빙글 모험", false),
+    guide("안녕, 아린아! 나는 <b>빙글이</b>야. 도형을 빙글빙글 돌리는 비밀을 알려 줄게.<br>비밀은 딱 하나! <b>도형과 점은 꼭 붙어서 같이 돌아.</b> 1번부터 차례대로 해 보자!"),
+    el("div", { class: "stages" }, [
+      stageBtn("learn", "1. 빙글 연습장", "손가락으로 직접 돌려 보며 ¼바퀴, ½바퀴를 익혀요.", "var(--accent)", learn),
+      stageBtn("dot", "2. 점은 어디로?", "화살표를 따라가면 점이 어디에 도착할까요?", "var(--coral)", () => dotGame()),
+      stageBtn("find", "3. 돌린 모양 찾기", "책에 나온 그 문제! 돌린 모양을 골라요.", "var(--shape-edge)", () => findGame()),
+      stageBtn("square", "4. 네모 모눈 돌리기", "빈 모눈을 톡톡 눌러서 색칠해요.", "var(--sky)", () => gridGame("square")),
+      stageBtn("tri", "5. 세모 모눈 돌리기", "세모 모눈도 ¼바퀴씩 빙글!", "var(--orange)", () => gridGame("tri")),
+    ])
+  );
+}
+function stageBtn(id, t, d, c, fn) {
+  const b = el("button", { class: "stage", on: { click: () => { beep([[600, .06]]); fn(); } } }, [
+    stageIcon(id),
+    el("div", {}, [el("div", { class: "t", text: t }), el("div", { class: "d", text: d }), el("div", { class: "s", text: id === "learn" ? "" : "★ " + (stars[id] || 0) })]),
+  ]);
+  b.style.setProperty("--c", c);
+  return b;
+}
+
+/* ---------------- 1. 빙글 연습장 ---------------- */
+function learn() {
+  screen = "learn";
+  let shapeName = "L", angle = 0, showStar = true;
+  const g = guide("아래 버튼을 누르거나, <b>동그라미를 손가락으로 잡고 돌려</b> 봐! 점이 어디로 가는지 잘 봐.");
+  const dial = el("svg", { class: "dial", viewBox: "-150 -135 300 270" });
+  const spin = el("g", { class: "rot" });
+  const ghost = el("g", { opacity: .18 });
+  const readout = el("div", { class: "readout" });
+  // fixed position markers
+  const marks = el("g");
+  [["위", 0, -118], ["오른쪽", 130, 5], ["아래", 0, 128], ["왼쪽", -130, 5]].forEach(([t, x, y]) => marks.append(el("text", { x, y, "text-anchor": "middle", "font-size": 14, fill: "var(--muted)", "font-family": "Gowun Dodum, sans-serif", text: t })));
+  dial.append(el("circle", { r: 100, fill: "#fff", stroke: "var(--line)", "stroke-width": 2, "stroke-dasharray": "5 6" }), marks, ghost, spin);
+
+  function draw() {
+    const pts = SHAPES[shapeName];
+    spin.replaceChildren(el("circle", { r: 100, fill: "transparent" }), shapeEl(pts, 75));
+    ghost.replaceChildren(shapeEl(pts, 75, { fill: "#999", stroke: "#999" }), dotEl(0, -100, 9));
+    if (showStar) { const [x, y] = topPoint(pts); spin.append(starEl(x * 75, y * 75, 11)); }
+    spin.append(dotEl(0, -100, 10));
+    setAngle(angle, false);
+  }
+  function setAngle(a, animate = true) {
+    angle = a;
+    spin.style.transition = animate ? "" : "none";
+    spin.style.transform = `rotate(${a}deg)`;
+    const n = ((Math.round(a / 90) % 4) + 4) % 4;
+    const names = ["위", "오른쪽", "아래", "왼쪽"];
+    const turns = ["처음 모양 (0바퀴)", "시계 방향 ¼바퀴", "시계 방향 ½바퀴", "시계 방향 ¾바퀴 (= 시계 반대 방향 ¼바퀴)"];
+    if (Math.abs(a - Math.round(a / 90) * 90) < 1) readout.textContent = `점이 ${names[n]}에 있어요 → ${turns[n]}`;
+  }
+  // drag to rotate
+  let dragging = false, startA = 0, base = 0;
+  const angAt = e => { const r = dial.getBoundingClientRect(); return Math.atan2(e.clientY - (r.top + r.height / 2), e.clientX - (r.left + r.width / 2)) * 180 / Math.PI; };
+  dial.addEventListener("pointerdown", e => { dragging = true; dial.setPointerCapture(e.pointerId); startA = angAt(e); base = angle; spin.style.transition = "none"; });
+  dial.addEventListener("pointermove", e => { if (!dragging) return; let d = angAt(e) - startA; if (d > 180) d -= 360; if (d < -180) d += 360; angle = base + d; spin.style.transform = `rotate(${angle}deg)`; readout.textContent = "빙글빙글…"; });
+  const end = () => { if (!dragging) return; dragging = false; spin.style.transition = ""; setAngle(Math.round(angle / 90) * 90); beep([[700, .06]]); };
+  dial.addEventListener("pointerup", end); dial.addEventListener("pointercancel", end);
+
+  const shapes = el("div", { class: "shapes" });
+  for (const n of ["L", "rtri", "trap", "half", "flag", "arrow"]) {
+    const b = el("button", { "aria-label": n, on: { click: () => { shapeName = n; angle = 0; [...shapes.children].forEach(c => c.classList.toggle("on", c === b)); draw(); } } }, [(() => { const s = el("svg", { viewBox: "-50 -50 100 100" }); s.append(shapeEl(SHAPES[n], 40)); return s; })()]);
+    if (n === shapeName) b.classList.add("on");
+    shapes.append(b);
+  }
+  const lesson = [
+    "점이 <b>위 → 오른쪽</b>으로 가면 <b>¼바퀴</b>야. 별(★)이 붙은 곳을 봐. 점이랑 같이 움직이지?",
+    "<b>½바퀴</b>는 점이 <b>위 → 아래</b>. 도형이 거꾸로 서게 돼!",
+    "시계 <b>반대</b> 방향 ¼바퀴는 점이 <b>위 → 왼쪽</b>. 시계 방향으로 ¾바퀴 돌린 거랑 똑같아!",
+    "중요해! 점 쪽에 있던 별은 돌린 뒤에도 <b>항상 점 옆</b>에 있어. 문제 풀 때 이것만 기억해!",
+  ];
+  const panel = el("div", { class: "panel" }, [
+    el("button", { class: "btn", on: { click: () => { setAngle(angle + 90); g.say(lesson[0]); beep([[620, .08]]); } } }, ["↻ 시계 방향 ¼바퀴"]),
+    el("button", { class: "btn", on: { click: () => { setAngle(angle + 180); g.say(lesson[1]); beep([[620, .08]]); } } }, ["↻ 시계 방향 ½바퀴"]),
+    el("button", { class: "btn coral", on: { click: () => { setAngle(angle - 90); g.say(lesson[2]); beep([[520, .08]]); } } }, ["↺ 시계 반대 방향 ¼바퀴"]),
+    el("div", { class: "btns" }, [
+      el("button", { class: "btn ghost", on: { click: () => { setAngle(0); g.say(lesson[3]); } } }, ["처음으로 되돌리기"]),
+      el("button", { class: "btn alt", on: { click: () => { showStar = !showStar; draw(); } } }, ["★ 별 스티커 켜기/끄기"]),
+    ]),
+    el("div", { class: "dirtag", text: "다른 도형으로 바꿔 보기" }), shapes,
+  ]);
+  app.replaceChildren(topbar("빙글 연습장"), g, el("div", { class: "card learn" }, [el("div", {}, [dial, readout]), panel]));
+  readout.style.textAlign = "center";
+  draw();
+}
+
+/* ---------------- round helper ---------------- */
+function round(id, title, total, makeQ, intro) {
+  let i = 0, got = 0;
+  const marks = [];
+  const prog = el("div", { class: "prog" });
+  for (let k = 0; k < total; k++) { const d = el("i"); marks.push(d); prog.append(d); }
+  const g = guide(intro);
+  const body = el("div", { class: "card" });
+  app.replaceChildren(topbar(title), g, prog, body);
+  function next() {
+    if (i >= total) return finish();
+    marks.forEach((m, k) => m.classList.toggle("now", k === i));
+    makeQ(i, body, g, (firstTry) => {
+      marks[i].classList.add(firstTry ? "on" : "miss");
+      if (firstTry) { got++; stars[id] = (stars[id] || 0) + 1; saveStars(); $(".pill", app).lastChild.textContent = String(totalStars()); }
+      i++;
+      setTimeout(next, firstTry ? 1100 : 1500);
+    });
+  }
+  function finish() {
+    confetti(); yay();
+    g.say(got === total ? "와! 전부 한 번에 맞혔어! 아린이는 <b>빙글빙글 박사</b>야!" : `<b>${got}개</b>를 한 번에 맞혔어! 틀린 문제도 끝까지 풀어서 멋져. 한 번 더 해 볼까?`);
+    body.replaceChildren(el("div", { class: "end" }, [
+      el("div", { class: "big", text: "참 잘했어요!" }),
+      el("div", { class: "stars", text: "★".repeat(got) + "☆".repeat(total - got) }),
+      el("div", { class: "btns" }, [
+        el("button", { class: "btn", on: { click: () => round(id, title, total, makeQ, intro) } }, ["한 번 더!"]),
+        el("button", { class: "btn ghost", on: { click: home } }, ["처음으로"]),
+      ]),
+    ]));
+  }
+  next();
+}
+
+/* ---------------- 2. 점은 어디로? ---------------- */
+function dotGame() {
+  screen = "dot";
+  round("dot", "점은 어디로?", 8, (i, body, g, done) => {
+    const sweep = pick([90, 180, -90, 90, 270]);
+    const start = i < 4 ? -90 : pick([-90, 0, 90, 180]); // later: dot starts elsewhere
+    const target = ((start + sweep) % 360 + 360) % 360;
+    g.say(i < 4 ? `점이 화살표를 따라 <b>${DIRNAME[sweep]}</b> 가면 어디에 도착할까? 도착할 곳을 눌러 봐!`
+      : `이번엔 점이 <b>${POSNAME[(start + 360) % 360]}</b>에서 출발해! 화살표를 따라가면 어디에 도착할까?`);
+    const s = el("svg", { viewBox: "-140 -140 280 280", style: "width:100%;max-width:420px;display:block;margin:0 auto" });
+    const mover = el("g", { class: "rot" });
+    const sx = 90 * Math.cos(start * Math.PI / 180), sy = 90 * Math.sin(start * Math.PI / 180);
+    mover.append(dotEl(sx, sy, 12));
+    s.append(el("circle", { r: 90, fill: "#fff", stroke: "var(--line)", "stroke-width": 3, "stroke-dasharray": "5 6" }), arrowArc(106, start, sweep));
+    let tries = 0, over = false;
+    for (const a of [0, 90, 180, 270]) {
+      if (a === (start + 360) % 360) continue;
+      const x = 90 * Math.cos(a * Math.PI / 180), y = 90 * Math.sin(a * Math.PI / 180);
+      const t = el("circle", { cx: x, cy: y, r: 22, fill: "var(--soft)", stroke: "var(--accent)", "stroke-width": 3, "stroke-dasharray": "4 4", style: "cursor:pointer" });
+      t.addEventListener("click", () => {
+        if (over) return;
+        if (a === target) {
+          over = true; yay(); t.setAttribute("fill", "#bfe8cf"); t.setAttribute("stroke", "var(--ok)");
+          mover.style.transform = `rotate(${sweep}deg)`;
+          msg.textContent = `맞았어! ${POSNAME[a]}에 도착!`; msg.className = "msg ok";
+          done(tries === 0);
+        } else {
+          tries++; oops(); t.setAttribute("fill", "#ffd9d4");
+          msg.textContent = "다시! 화살표 머리 끝을 봐."; msg.className = "msg no";
+          if (tries >= 2) { mover.style.transform = `rotate(${sweep}deg)`; msg.textContent = "점을 따라가 봐. 화살표 끝에 도착했지?"; setTimeout(() => { mover.style.transition = "none"; mover.style.transform = "rotate(0deg)"; requestAnimationFrame(() => mover.style.transition = ""); }, 1800); }
+        }
+      });
+      s.append(t);
+    }
+    s.append(mover);
+    const msg = el("div", { class: "msg" });
+    body.replaceChildren(s, msg);
+  }, "점이 화살표를 따라 어디로 가는지 맞혀 봐!");
+}
+
+/* ---------------- 3. 돌린 모양 찾기 ---------------- */
+function makeFindQ(level) {
+  const easy = [["rect", 90], ["rtri", 90], ["half", 180], ["trap", -90], ["L", 90], ["arrow", 90]];
+  const all = Object.keys(SHAPES);
+  let shape, sweep;
+  if (level < 3) [shape, sweep] = pick(easy);
+  else { shape = pick(all); sweep = pick([90, 180, -90, 270]); }
+  const cw = ((sweep % 360) + 360) % 360;
+  const base = SHAPES[shape];
+  const correct = base.map(TF["r" + cw]);
+  const ck = keyOf(correct);
+  const seen = new Set([ck]), dis = [];
+  const prefs = ["r" + ((360 - cw) % 360), "r0", ...shuffle(["fh", "fv", "r180", "fh90", "fh270", "r90", "r270"]), "r45"];
+  for (const n of prefs) {
+    const p = base.map(TF[n]), k = keyOf(p);
+    if (!seen.has(k)) { seen.add(k); dis.push(p); }
+    if (dis.length === 2) break;
+  }
+  const choices = shuffle([{ pts: correct, ok: true }, ...dis.map(p => ({ pts: p, ok: false }))]);
+  return { shape, base, sweep, cw, choices };
+}
+function findGame() {
+  screen = "find";
+  round("find", "돌린 모양 찾기", 8, (i, body, g, done) => {
+    const q = makeFindQ(i);
+    const R = 80, S = 58;
+    g.say(i < 3 ? `왼쪽 도형을 <b>${DIRNAME[q.sweep]}</b> 돌린 모양을 찾아 봐. 점이 어디로 갔는지 먼저 봐!` : "이제 화살표만 보고 찾아 볼까? 점이 어디까지 갔는지 세어 봐!");
+    const left = el("svg", { viewBox: "-110 -110 220 220" });
+    const ghost = el("g", { opacity: 0 });
+    const spin = el("g", { class: "rot" });
+    ghost.append(shapeEl(q.base, S, { fill: "#bbb", stroke: "#aaa" }));
+    spin.append(shapeEl(q.base, S), dotEl(0, -R, 7));
+    const starG = el("g", { opacity: 0 }); const [sx, sy] = topPoint(q.base); starG.append(starEl(sx * S, sy * S, 10)); spin.append(starG);
+    left.append(dashedCircle(R), arrowArc(R + 14, -90, q.sweep), ghost, spin);
+    const tag = el("div", { class: "dirtag", text: i < 3 ? DIRNAME[q.sweep] : "" });
+    let tries = 0, over = false;
+    const showHint = () => {
+      ghost.setAttribute("opacity", .5); starG.setAttribute("opacity", 1);
+      spin.style.transition = "none"; spin.style.transform = "rotate(0deg)";
+      requestAnimationFrame(() => requestAnimationFrame(() => { spin.style.transition = ""; spin.style.transform = `rotate(${q.sweep}deg)`; }));
+      g.say("별(★)이 붙은 곳 보이지? 점이랑 같이 돌아가. 돌린 뒤 <b>별이 점 옆에 있는 모양</b>을 찾아!");
+    };
+    const t = q.cw * Math.PI / 180 - Math.PI / 2;
+    const ch = el("div", { class: "choices" });
+    q.choices.forEach(c => {
+      const s = el("svg", { viewBox: "-100 -100 200 200" });
+      s.append(dashedCircle(R), shapeEl(c.pts, S), dotEl(R * Math.cos(t), R * Math.sin(t), 7));
+      const b = el("button", { class: "choice", "aria-label": "보기" }, [s]);
+      b.addEventListener("click", () => {
+        if (over || b.classList.contains("bad")) return;
+        if (c.ok) { over = true; b.classList.add("good"); yay(); msg.textContent = "딩동댕! 정답이야!"; msg.className = "msg ok"; if (tries === 0) confetti(); done(tries === 0); }
+        else { tries++; b.classList.add("bad"); oops(); msg.textContent = "아깝다! '돌려 보기'를 눌러서 확인해 볼까?"; msg.className = "msg no"; g.say("괜찮아! 틀리면서 배우는 거야.", "sad"); if (tries >= 1) setTimeout(showHint, 600); }
+      });
+      ch.append(b);
+    });
+    const msg = el("div", { class: "msg" });
+    const hintBtn = el("button", { class: "btn alt", on: { click: showHint } }, ["↻ 돌려 보기"]);
+    body.replaceChildren(el("div", { class: "qrow" }, [el("div", { class: "qleft" }, [left, tag, hintBtn]), ch]), msg);
+  }, "책에서 본 문제야! 점이 어디로 갔는지 보면 바로 알 수 있어.");
+}
+
+/* ---------------- 4 & 5. 모눈 돌리기 ---------------- */
+// square cells "r,c"; triangle cells "u|d,i,k"
+const SQ_CELLS = []; for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) SQ_CELLS.push(r + "," + c);
+const TRI_CELLS = []; for (let i = 0; i < 3; i++) { for (let k = 0; k <= i; k++) TRI_CELLS.push("u," + i + "," + k); for (let k = 0; k < i; k++) TRI_CELLS.push("d," + i + "," + k); }
+const S3 = Math.sqrt(3);
+function triVerts(id, s) {
+  const [t, i, k] = id.split(","); const I = +i, K = +k, h = s * S3 / 2;
+  const P = (a, b) => [(b - a / 2) * s, -2 * h + a * h];
+  return t === "u" ? [P(I, K), P(I + 1, K), P(I + 1, K + 1)] : [P(I, K), P(I, K + 1), P(I + 1, K + 1)];
+}
+const vkey = v => v.map(n => Math.round(n * 10)).join(":");
+function neighbors(kind) {
+  const cells = kind === "square" ? SQ_CELLS : TRI_CELLS, nb = {};
+  for (const a of cells) nb[a] = cells.filter(b => {
+    if (a === b) return false;
+    if (kind === "square") { const [r1, c1] = a.split(",").map(Number), [r2, c2] = b.split(",").map(Number); return Math.abs(r1 - r2) + Math.abs(c1 - c2) === 1; }
+    const va = triVerts(a, 10).map(vkey), vb = triVerts(b, 10).map(vkey);
+    return va.filter(v => vb.includes(v)).length === 2;
+  });
+  return nb;
+}
+const NB = { square: neighbors("square"), tri: neighbors("tri") };
+function rotSquareSet(set) { return new Set([...set].map(id => { const [r, c] = id.split(",").map(Number); return c + "," + (2 - r); })); }
+function randomPattern(kind, size) {
+  for (;;) {
+    const cells = kind === "square" ? SQ_CELLS : TRI_CELLS;
+    const set = new Set([pick(cells)]);
+    while (set.size < size) { const from = pick([...set]); const n = pick(NB[kind][from]); set.add(n); }
+    if (kind === "square") { const r = rotSquareSet(set); if ([...r].every(x => set.has(x))) continue; }
+    return set;
+  }
+}
+
+function squareGroup(cell, pattern, filled, onTap) {
+  const g = el("g"), half = cell * 1.5;
+  for (const id of SQ_CELLS) {
+    const [r, c] = id.split(",").map(Number);
+    const on = filled ? filled.has(id) : pattern.has(id);
+    const rc = el("rect", { x: -half + c * cell, y: -half + r * cell, width: cell, height: cell, fill: on ? "var(--shape)" : "#fff", stroke: "#a9a7c6", "stroke-width": 1.5, "stroke-dasharray": "4 4", class: onTap ? "cell" : null });
+    if (onTap) rc.addEventListener("click", () => onTap(id, rc));
+    rc.dataset.id = id;
+    g.append(rc);
+  }
+  g.append(dotEl(0, -half, 6));
+  return g;
+}
+function triGroup(s, pattern, filled, onTap) {
+  const g = el("g");
+  for (const id of TRI_CELLS) {
+    const on = filled ? filled.has(id) : pattern.has(id);
+    const p = el("polygon", { points: triVerts(id, s).map(v => v.join(",")).join(" "), fill: on ? "var(--shape)" : "#fff", stroke: "#a9a7c6", "stroke-width": 1.5, "stroke-dasharray": "4 4", "stroke-linejoin": "round", class: onTap ? "cell" : null });
+    if (onTap) p.addEventListener("click", () => onTap(id, p));
+    p.dataset.id = id;
+    g.append(p);
+  }
+  g.append(dotEl(0, -2 * s * S3 / 2, 6));
+  return g;
+}
+
+function gridGame(kind) {
+  screen = kind;
+  const isSq = kind === "square";
+  const title = isSq ? "네모 모눈 돌리기" : "세모 모눈 돌리기";
+  round(kind, title, 6, (i, body, g, done) => {
+    const size = i < 2 ? (isSq ? 2 : 1) : i < 4 ? (isSq ? 3 : 2) : (isSq ? 4 : 3);
+    const pattern = randomPattern(kind, size);
+    const blank = i < 2 ? pick([1, 2, 3]) : i < 5 ? pick([1, 2, 3]) : 0;
+    const user = new Set();
+    let tries = 0, over = false;
+    const mkGroup = (pat, filled, tap) => isSq ? squareGroup(40, pat, filled, tap) : triGroup(38, pat, filled, tap);
+    const frames = el("div", { class: "frames" });
+    let blankRot, blankSvg, hintG;
+    for (let k = 0; k < 4; k++) {
+      const s = el("svg", { viewBox: isSq ? "-82 -82 164 164" : "-90 -86 180 180" });
+      const outer = el("g", isSq ? {} : { transform: "translate(0,4)" });
+      const r = el("g", { transform: `rotate(${90 * k})` });
+      if (k === blank) {
+        r.append(mkGroup(pattern, user, (id, node) => {
+          if (over) return;
+          if (user.has(id)) user.delete(id); else user.add(id);
+          node.setAttribute("fill", user.has(id) ? "var(--shape)" : "#fff");
+          beep([[user.has(id) ? 760 : 500, .05]]);
+          msg.textContent = ""; checkBtn.disabled = user.size === 0;
+        }));
+        blankRot = r; blankSvg = s;
+        hintG = el("g", { class: "rot", opacity: 0, "pointer-events": "none" });
+        outer.append(r, hintG);
+      } else {
+        r.append(mkGroup(pattern, null, null));
+        outer.append(r);
+      }
+      s.append(outer);
+      frames.append(el("div", { class: "frame" + (k === blank ? " blank" : "") }, [s]));
+      if (k < 3) frames.append(el("div", { class: "arr" + (k === 1 ? " mid" : ""), text: "➜" }));
+    }
+    const msg = el("div", { class: "msg" });
+    const checkBtn = el("button", { class: "btn", disabled: true, on: { click: check } }, ["다 칠했어요!"]);
+    const hintBtn = el("button", { class: "btn alt", on: { click: hint } }, ["↻ 돌려 보기"]);
+    const clearBtn = el("button", { class: "btn ghost", on: { click: () => { user.clear(); blankRot.querySelectorAll("[data-id]").forEach(n => n.setAttribute("fill", "#fff")); checkBtn.disabled = true; } } }, ["지우기"]);
+
+    function hint() {
+      // ghost of the neighbouring frame turning into the blank one
+      const fromK = blank === 0 ? 1 : blank - 1;
+      const dir = blank === 0 ? -90 : 90;
+      hintG.replaceChildren(el("g", { opacity: .55 }, [mkGroup(pattern, null, null)]));
+      hintG.style.transition = "none";
+      hintG.style.transform = `rotate(${90 * fromK}deg)`;
+      hintG.setAttribute("opacity", 1);
+      requestAnimationFrame(() => requestAnimationFrame(() => { hintG.style.transition = ""; hintG.style.transform = `rotate(${90 * fromK + dir}deg)`; }));
+      setTimeout(() => { hintG.setAttribute("opacity", 0); }, 3200);
+      g.say(blank === 0
+        ? "첫 번째 칸은 거꾸로 생각해! 두 번째 그림을 <b>시계 반대 방향으로 ¼바퀴</b> 돌리면 돼. 점이 위로 오게!"
+        : "바로 앞 그림이 <b>¼바퀴</b> 돌아가는 걸 봐! 점 옆에 있던 칸은 돌아간 뒤에도 <b>점 옆</b>에 있어.");
+    }
+    function check() {
+      if (over) return;
+      const ok = user.size === pattern.size && [...pattern].every(x => user.has(x));
+      if (ok) {
+        over = true; yay(); if (tries === 0) confetti();
+        frames.querySelector(".blank").classList.add("done");
+        msg.textContent = "딩동댕! 정확해!"; msg.className = "msg ok"; done(tries === 0);
+      } else {
+        tries++; oops();
+        msg.textContent = "음… 조금 달라! 점이 어디 있는지 다시 봐."; msg.className = "msg no";
+        g.say("괜찮아! <b>점이 있는 쪽</b>을 먼저 보고, 점 옆 칸부터 칠해 봐.", "sad");
+        if (tries >= 2) {
+          // show the answer softly
+          blankRot.querySelectorAll("[data-id]").forEach(n => { if (pattern.has(n.dataset.id) && !user.has(n.dataset.id)) n.setAttribute("fill", "var(--pink)"); });
+          msg.textContent = "분홍색 칸이 정답이야. 칠해서 맞춰 볼까?";
+        }
+      }
+    }
+    g.say(blank === 0
+      ? "도전! 첫 번째 그림이 비어 있어. 두 번째 그림을 거꾸로 돌려서 생각해 봐!"
+      : `<b>${blank + 1}번째</b> 모눈이 비어 있어. 바로 앞 그림을 시계 방향으로 ¼바퀴 돌려서 칸을 톡톡 눌러 칠해 봐!`);
+    body.replaceChildren(frames, msg, el("div", { class: "btns" }, [hintBtn, clearBtn, checkBtn]));
+  }, isSq ? "모눈과 도형과 점이 모두 같이 돌아! 점은 위 → 오른쪽 → 아래 → 왼쪽." : "세모 모눈도 똑같아. 점이 있는 꼭짓점을 따라가!");
+}
+
+home();
+})();
+</script>
